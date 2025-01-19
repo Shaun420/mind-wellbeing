@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Mood Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #6c5ce7;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #6c5ce7;
+        }
+        .mood-selection label {
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1em;
+        }
+        button {
+            background-color: #6c5ce7;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #5a4acc;
+        }
+        .chart-container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Daily Mood Tracker</h1>
+    </header>
+
+    <div class="container">
+        <h2>Log Your Mood</h2>
+        <form id="moodForm">
+            <div class="mood-selection">
+                <label><input type="radio" name="mood" value="Happy"> Happy</label>
+                <label><input type="radio" name="mood" value="Neutral"> Neutral</label>
+                <label><input type="radio" name="mood" value="Sad"> Sad</label>
+            </div>
+            <textarea id="note" placeholder="Add a note (optional)..."></textarea>
+            <button type="button" onclick="submitMood()">Submit</button>
+        </form>
+
+        <h2>Mood Trends</h2>
+        <div class="chart-container">
+            <div id="chart"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-2.18.2.min.js"></script>
+    <script>
+        function submitMood() {
+            const mood = document.querySelector('input[name="mood"]:checked');
+            const note = document.getElementById('note').value;
+
+            if (!mood) {
+                alert('Please select your mood before submitting.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('mood', mood.value);
+            formData.append('note', note);
+
+            fetch('/submit', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                if (response.ok) {
+                    document.getElementById('moodForm').reset();
+                    fetchMoodData();
+                }
+            });
+        }
+
+        function fetchMoodData() {
+            fetch('/mood_data')
+                .then(response => response.json())
+                .then(data => {
+                    const dates = data.map(entry => entry.date);
+                    const moodLevels = data.map(entry => entry.mood);
+					const moodNotes = data.map(entry => entry.note);
+
+                    const trace = {
+                        x: dates,
+                        y: moodLevels,
+						text: moodNotes,
+                        type: 'scatter',
+                        mode: 'lines+markers',
+                        marker: {color: 'blue'},
+                        line: {shape: 'linear'}
+                    };
+
+                    const layout = {
+                        title: 'Mood Trends Over Time',
+                        xaxis: {title: 'Date'},
+                        yaxis: {
+                            title: 'Mood Level',
+                            tickvals: [1, 2, 3],
+                            ticktext: ['Sad', 'Neutral', 'Happy']
+                        }
+                    };
+
+                    Plotly.newPlot('chart', [trace], layout);
+                });
+        }
+
+        fetchMoodData();
+    </script>
+</body>
+</html>
