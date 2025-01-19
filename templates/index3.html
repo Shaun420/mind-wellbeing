@@ -81,7 +81,8 @@
                 .then(response => response.json())
                 .then(data => {
                     const dates = data.map(entry => entry.date);
-                    const moodLevels = data.map(entry => entry.mood);
+					const moodLevels = data.map(entry => entry.moodLevel);
+					const moodValues = data.map(entry => entry.moodValue);
                     const moodNotes = data.map(entry => entry.note);
 
                     const trace = {
@@ -90,7 +91,7 @@
                         text: moodNotes,
                         type: 'scatter',
                         mode: 'lines+markers',
-                        marker: {color: 'blue'},
+                        marker: {color: 'palevioletred'},
                         line: {shape: 'linear'}
                     };
 
@@ -101,8 +102,9 @@
                         xaxis: {title: 'Date'},
                         yaxis: {
                             title: 'Mood Level',
-                            tickvals: [1, 2, 3],
-                            ticktext: ['Sad', 'Neutral', 'Happy']
+							tickvals: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+							ticktext: ['Other', 'Sad', 'Creative', 'Apathy', 'Relaxed', 'Excited',
+							'Guilty',  'Anxious',  'Angry', 'Neutral', 'Happy']
                         }
                     };
 
